@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>News</h1>
+
+
+<table id='News'>
+    <tr>
+        <th>Number</th>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Link</th>
+    </tr>
+    {% for instance in object_list%}
+    <tr>
+        <th>{{instance.id}}</th>
+        <th>{{instance.Date}}</th>
+        <th>{{instance.Title}}</th>
+        <th><a href={{instance.Link}} target="_blank">Link</a></th>
+    </tr>
+    {% endfor %}
+    
+</table>
+
+{% endblock %}
