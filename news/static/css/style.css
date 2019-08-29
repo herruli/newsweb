@@ -7,3 +7,9 @@ ul {
   li {
     display: inline;
   }
+
+  #clock {
+    font-size:40px;
+    position: absolute;
+    right: 0px;
+  }

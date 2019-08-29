@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+{% load static %}
+<script src = {% static "js/clock.js" %}> </script>
+<link rel='stylesheet' type='text/css' href="{% static 'css/style.css'%}">
 <html>
     <head>  
         <meta http-equiv="refresh" content="600">
@@ -6,9 +9,9 @@
             News Page
         </title>        
     </head>
-    <body>
+    <body onload="startTime()">
         {% include 'navbar.html' %}
-        
+        <div id='clock'></div>
         {% block content %}
         replace me
         {% endblock %}

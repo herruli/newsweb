@@ -7,7 +7,7 @@ Created on Mon Aug  5 15:33:16 2019
 #%%
 import pandas as pd
 import feedparser
-from datetime import date
+from datetime import date,datetime, timedelta
 import sqlite3
 import time
 def transformationDf(feed,newsDf):
@@ -33,11 +33,12 @@ urls= ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'https://feeds.a.dj.com/rss/RSSW
        'https://www.cbsnews.com/latest/rss/world','https://www.theguardian.com/world/rss','https://www.theguardian.com/business/economics/rss','https://www.theguardian.com/uk/business/rss',\
        'https://www.theguardian.com/world/hong-kong\rss','https://rthk.hk/rthk/news/rss/c_expressnews_clocal.xml','	https://rthk.hk/rthk/news/rss/c_expressnews_cinternational.xml',\
        'https://rthk.hk/rthk/news/rss/c_expressnews_cfinance.xml','http://news.google.com.hk/news?pz=1&cf=all&ned=hk&hl=zh-TW&output=rss','http://rss.appleactionews.com/rss.xml',\
-       'http://news.on.cc/ncnews/rss/loc_news.xml','http://www.hkej.com/rss/sitemap.xml','https://www.japantimes.co.jp/feed',' japantoday.com/feed/atom ']
+       'http://news.on.cc/ncnews/rss/loc_news.xml','http://www.hkej.com/rss/sitemap.xml','https://www.japantimes.co.jp/feed','japantoday.com/feed/atom','https://www.thestandnews.com/rss/',\
+       'https://www.factwire.org/feed.xml', 'https://theinitium.com/newsfeed/','https://www.hongkongfp.com/feed/']
 
 if __name__ == '__main__':
   i=0
-  if i!= 1:
+  while i!= 1:
     for url in urls:
         try:
             feed = feedparser.parse(url)
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     newsDf = newsDf[newsDf['Date'].dt.date==today]
     newsDf = newsDf.reset_index(drop=True)
     newsDf['id'] = newsDf.index
-
+    newsDf['Date'] = newsDf['Date'].apply(lambda x: x+ timedelta(hours=8))
     #send the dataframe to sqlite3
 
     conn = sqlite3.connect(r'c:\Users\hcyli1\Desktop\djangoproject\db.sqlite3')
