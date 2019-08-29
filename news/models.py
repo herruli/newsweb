@@ -4,4 +4,5 @@ from django.db import models
 class News(models.Model):
     Date    = models.DateTimeField()
     Title   = models.TextField()
-    Link = models.TextField()
+    Link    = models.TextField()
+    Media   = models.TextField()
