@@ -81,37 +81,36 @@ urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         }
 
 if __name__ == '__main__':
-  crDf = retrieveCRNews()
+
   i=0
   while i!= 1:
+    for key,item in urls.items():
+      url = item[0]
+      timezone = changeTimezone(item[1])
+      try:
+        feed = feedparser.parse(url)
+        tempDf = transformationDf(feed, key, tempDf)
+        tempDf['Date'] = pd.to_datetime(tempDf['Date'])
+        tempDf['Date'] = tempDf['Date'].apply(lambda x: x+ timedelta(hours=timezone))
+        tempDf = tempDf.sort_values(by='Date')
+        newsDf = pd.concat([tempDf,newsDf],sort=False)
+      except AttributeError:
+        print(url,' failed')
 
-  for key,item in urls.items():
-    url = item[0]
-    timezone = changeTimezone(item[1])
-    try:
-      feed = feedparser.parse(url)
-      tempDf = transformationDf(feed, key, tempDf)
-      tempDf['Date'] = pd.to_datetime(tempDf['Date'])
-      tempDf['Date'] = tempDf['Date'].apply(lambda x: x+ timedelta(hours=timezone))
-      tempDf = tempDf.sort_values(by='Date')
-      newsDf = pd.concat([tempDf,newsDf],sort=False)
-    except AttributeError:
-      print(url,' failed')
-
-
-  today = date.today()
-  newsDf = pd.concat([newsDf,crDf],sort=False)
-  newsDf = newsDf[newsDf['Date'].dt.date==today]
-  newsDf = newsDf.reset_index(drop=True)
-  newsDf['id'] = newsDf.index
-  newsDf = newsDf.sort_values(by='Date' , ascending=False)
-  #send the dataframe to sqlite3
+    crDf = retrieveCRNews()
+    today = date.today()
+    newsDf = pd.concat([newsDf,crDf],sort=False)
+    newsDf = newsDf[newsDf['Date'].dt.date==today]
+    newsDf = newsDf.reset_index(drop=True)
+    newsDf['id'] = newsDf.index
+    newsDf = newsDf.sort_values(by='Date' , ascending=False)
+    #send the dataframe to sqlite3
 
     
-  conn = sqlite3.connect(r'C:\Users\hcyli1\Documents\GitHub\newsweb\db.sqlite3')
-  cursor = conn.cursor()
-  dropTableStatement = "DROP Table news_news"
-  cursor.execute(dropTableStatement)
-  newsDf.to_sql('news_news', conn, if_exists='replace', index=False)
-  print('News updated')
-  time.sleep(600)
+    conn = sqlite3.connect(r'C:\Users\hcyli1\Documents\GitHub\newsweb\db.sqlite3')
+    #cursor = conn.cursor()
+    #dropTableStatement = "DROP Table news_news"
+    #cursor.execute(dropTableStatement)
+    newsDf.to_sql('news_news', conn, if_exists='replace', index=False)
+    print('News updated')
+    time.sleep(600)
