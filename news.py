@@ -52,8 +52,8 @@ urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         'EconomistChina':['https://www.economist.com/china/rss.xml','GMT'], \
         'EconomistBusiness':['https://www.economist.com/business/rss.xml','GMT'],\
         'EcomoistInternational':['https://www.economist.com/international/rss.xml','GMT'],\
-        'BBCBusiness':['http://feeds.bbci.co.uk/news/business/rss.xml','GMT'],\
-        'BBCWorldNews':['http://feeds.bbci.co.uk/news/world/rss.xml','GMT'],\
+        'BBCBusiness':['http://feeds.bbci.co.uk/news/business/rss.xml','HKT'],\
+        'BBCWorldNews':['http://feeds.bbci.co.uk/news/world/rss.xml','HKT'],\
         'BBCNews':['http://feeds.bbci.co.uk/news/rss.xml','GMT'],\
         'CBNNews':['http://www1.cbn.com/app_feeds/rss/news/rss.php?section=world','GMT'], \
         'NYTimes':['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml','GMT'],\
@@ -63,13 +63,13 @@ urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         'WashingtonPostBusiness':['http://feeds.washingtonpost.com/rss/business','EDT'],\
         'WashingtonPostWorld':['http://feeds.washingtonpost.com/rss/world','EDT'],\
         'CBSWorld':['https://www.cbsnews.com/latest/rss/world','GMT'],\
-        'GuardianWord':['https://www.theguardian.com/world/rss','GMT'],\
+        'GuardianWorld':['https://www.theguardian.com/world/rss','GMT'],\
         'GuardianEconomomics':['https://www.theguardian.com/business/economics/rss','GMT'],\
         'GuardianBusiness':['https://www.theguardian.com/uk/business/rss','GMT'],\
         'GuardianHongKong':['https://www.theguardian.com/world/hong-kong\rss','GMT'],\
-        'RthkLocal':['https://rthk.hk/rthk/news/rss/c_expressnews_clocal.xml','HKT'],\
-        'RthkInternational':['	https://rthk.hk/rthk/news/rss/c_expressnews_cinternational.xml','HKT'],\
-        'RthkFinance':['https://rthk.hk/rthk/news/rss/c_expressnews_cfinance.xml','HKT'],\
+        'RthkLocal':['https://rthk.hk/rthk/news/rss/c_expressnews_clocal.xml','GMT'],\
+        'RthkInternational':['	https://rthk.hk/rthk/news/rss/c_expressnews_cinternational.xml','GMT'],\
+        'RthkFinance':['https://rthk.hk/rthk/news/rss/c_expressnews_cfinance.xml','GMT'],\
         'GoogleNews':['http://news.google.com.hk/news?pz=1&cf=all&ned=hk&hl=zh-TW&output=rss','GMT'],\
         'AppleDaily':['http://rss.appleactionews.com/rss.xml','GMT'],\
         'HKEJ':['http://www.hkej.com/rss/sitemap.xml','HKT'],\
@@ -92,8 +92,7 @@ if __name__ == '__main__':
       feed = feedparser.parse(url)
       tempDf = transformationDf(feed, key, tempDf)
       tempDf['Date'] = pd.to_datetime(tempDf['Date'])
-      if timezone != 0 :
-        tempDf['Date'] = tempDf['Date'].apply(lambda x: x+ timedelta(hours=timezone))
+      tempDf['Date'] = tempDf['Date'].apply(lambda x: x+ timedelta(hours=timezone))
       tempDf = tempDf.sort_values(by='Date')
       newsDf = pd.concat([tempDf,newsDf],sort=False)
     except AttributeError:
@@ -101,7 +100,7 @@ if __name__ == '__main__':
 
 
   today = date.today()
-  newsDf = pd.concat([newsDf,crDf])
+  newsDf = pd.concat([newsDf,crDf],sort=False)
   newsDf = newsDf[newsDf['Date'].dt.date==today]
   newsDf = newsDf.reset_index(drop=True)
   newsDf['id'] = newsDf.index
@@ -110,6 +109,9 @@ if __name__ == '__main__':
 
     
   conn = sqlite3.connect(r'C:\Users\hcyli1\Documents\GitHub\newsweb\db.sqlite3')
+  cursor = conn.cursor()
+  dropTableStatement = "DROP Table news_news"
+  cursor.execute(dropTableStatement)
   newsDf.to_sql('news_news', conn, if_exists='replace', index=False)
   print('News updated')
   time.sleep(600)
