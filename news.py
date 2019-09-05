@@ -11,6 +11,16 @@ from datetime import date,datetime, timedelta
 import sqlite3
 import time
 from crnews import retrieveCRNews
+from pathlib import Path
+def deleteTable():
+  conn = sqlite3.connect(r'C:\Users\Herru\Documents\GitHub\newsweb\db.sqlite3')
+  cursor = conn.cursor()
+  deleteTableStatement = "DELETE from news_news"
+  cursor.execute(deleteTableStatement)
+  conn.commit()
+  print(pd.read_sql('select * from news_news',conn).shape)
+
+
 
 def transformationDf(feed,key,newsDf):
     for post in feed.entries:
@@ -27,7 +37,7 @@ def changeTimezone(timezone):
     if timezone == 'GMT':
         return 8
     if timezone == 'EDT':
-        return 12
+        return 8
     if timezone == 'JPT':
         return -1
     if timezone == 'CET':
@@ -36,9 +46,10 @@ def changeTimezone(timezone):
         return 0
     
 
-newsDf = pd.DataFrame(columns = ['Media', 'Date' , 'Title', 'Link'])
-tempDf = pd.DataFrame(columns = ['Media', 'Date' , 'Title', 'Link'])
-urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
+
+urls = {
+        'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
+        'WSJ_World': ['https://feeds.a.dj.com/rss/RSSWorldNews.xml','EDT'],\
         'WSJ_World': ['https://feeds.a.dj.com/rss/RSSWorldNews.xml','EDT'],\
         'MingPao港聞': ['https://news.mingpao.com/rss/pns/s00002.xml','HKT'],\
         'MingPao經濟':['https://news.mingpao.com/rss/pns/s00004.xml','HKT'],\
@@ -54,7 +65,7 @@ urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         'EcomoistInternational':['https://www.economist.com/international/rss.xml','GMT'],\
         'BBCBusiness':['http://feeds.bbci.co.uk/news/business/rss.xml','HKT'],\
         'BBCWorldNews':['http://feeds.bbci.co.uk/news/world/rss.xml','HKT'],\
-        'BBCNews':['http://feeds.bbci.co.uk/news/rss.xml','GMT'],\
+        
         'CBNNews':['http://www1.cbn.com/app_feeds/rss/news/rss.php?section=world','GMT'], \
         'NYTimes':['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml','GMT'],\
         'NYTimesBusiness':['https://rss.nytimes.com/services/xml/rss/nyt/Business.xml','GMT'],\
@@ -81,10 +92,13 @@ urls = {'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         }
 
 if __name__ == '__main__':
-
+  deleteTable()
   i=0
+  today = date.today()
   while i!= 1:
+    newsDf = pd.DataFrame(columns = ['Media', 'Date' , 'Title', 'Link']) 
     for key,item in urls.items():
+      tempDf = pd.DataFrame(columns = ['Media', 'Date' , 'Title', 'Link']) 
       url = item[0]
       timezone = changeTimezone(item[1])
       try:
@@ -93,24 +107,27 @@ if __name__ == '__main__':
         tempDf['Date'] = pd.to_datetime(tempDf['Date'])
         tempDf['Date'] = tempDf['Date'].apply(lambda x: x+ timedelta(hours=timezone))
         tempDf = tempDf.sort_values(by='Date')
+        tempDf = tempDf[tempDf['Date'].dt.date==today]
         newsDf = pd.concat([tempDf,newsDf],sort=False)
       except AttributeError:
         print(url,' failed')
 
     crDf = retrieveCRNews()
-    today = date.today()
     newsDf = pd.concat([newsDf,crDf],sort=False)
-    newsDf = newsDf[newsDf['Date'].dt.date==today]
     newsDf = newsDf.reset_index(drop=True)
     newsDf['id'] = newsDf.index
     newsDf = newsDf.sort_values(by='Date' , ascending=False)
+    newsDf = newsDf.drop_duplicates()
+
+
+#%%
     #send the dataframe to sqlite3
 
-    
-    conn = sqlite3.connect(r'C:\Users\hcyli1\Documents\GitHub\newsweb\db.sqlite3')
-    #cursor = conn.cursor()
-    #dropTableStatement = "DROP Table news_news"
-    #cursor.execute(dropTableStatement)
+    conn = sqlite3.connect(r'C:\Users\Herru\Documents\GitHub\newsweb\db.sqlite3')
     newsDf.to_sql('news_news', conn, if_exists='replace', index=False)
     print('News updated')
-    time.sleep(600)
+    time.sleep(60)
+
+"""
+        
+        """
