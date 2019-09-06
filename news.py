@@ -11,16 +11,19 @@ from datetime import date,datetime, timedelta
 import sqlite3
 import time
 from crnews import retrieveCRNews
-from pathlib import Path
+import os
+path = '\\Documents\\GitHub\\newsweb\\'
+os.chdir('C:')
+os.getcwd()
+databasePath = os.getcwd() + '\\db.sqlite3'
 def deleteTable():
-  conn = sqlite3.connect(r'C:\Users\Herru\Documents\GitHub\newsweb\db.sqlite3')
-  cursor = conn.cursor()
-  deleteTableStatement = "DELETE from news_news"
-  cursor.execute(deleteTableStatement)
-  conn.commit()
-  print(pd.read_sql('select * from news_news',conn).shape)
-
-
+    print(databasePath)
+    conn = sqlite3.connect(databasePath)
+    cursor = conn.cursor()
+    deleteTableStatement = "DELETE from news_news"
+    cursor.execute(deleteTableStatement)
+    conn.commit()
+    print("Database Cleared")
 
 def transformationDf(feed,key,newsDf):
     for post in feed.entries:
@@ -50,7 +53,6 @@ def changeTimezone(timezone):
 urls = {
         'WSJ': ["https://feeds.a.dj.com/rss/RSSWSJD.xml",'EDT'],\
         'WSJ_World': ['https://feeds.a.dj.com/rss/RSSWorldNews.xml','EDT'],\
-        'WSJ_World': ['https://feeds.a.dj.com/rss/RSSWorldNews.xml','EDT'],\
         'MingPao港聞': ['https://news.mingpao.com/rss/pns/s00002.xml','HKT'],\
         'MingPao經濟':['https://news.mingpao.com/rss/pns/s00004.xml','HKT'],\
         'MingPao國際':['https://news.mingpao.com/rss/pns/s00014.xml','HKT'],\
@@ -65,7 +67,6 @@ urls = {
         'EcomoistInternational':['https://www.economist.com/international/rss.xml','GMT'],\
         'BBCBusiness':['http://feeds.bbci.co.uk/news/business/rss.xml','HKT'],\
         'BBCWorldNews':['http://feeds.bbci.co.uk/news/world/rss.xml','HKT'],\
-        
         'CBNNews':['http://www1.cbn.com/app_feeds/rss/news/rss.php?section=world','GMT'], \
         'NYTimes':['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml','GMT'],\
         'NYTimesBusiness':['https://rss.nytimes.com/services/xml/rss/nyt/Business.xml','GMT'],\
@@ -122,11 +123,10 @@ if __name__ == '__main__':
 
 #%%
     #send the dataframe to sqlite3
-
-    conn = sqlite3.connect(r'C:\Users\Herru\Documents\GitHub\newsweb\db.sqlite3')
+    conn = sqlite3.connect(databasePath)
     newsDf.to_sql('news_news', conn, if_exists='replace', index=False)
     print('News updated')
-    time.sleep(60)
+    time.sleep(300)
 
 """
         
